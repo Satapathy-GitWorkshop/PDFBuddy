@@ -2,73 +2,239 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design Tokens ───────────────────────────────────────────────────────── */
 :root {
-  --brand-primary: #6366f1;
-  --brand-dark:    #0f0f1a;
-  --brand-surface: #f9f9fb;
-  --brand-muted:   #64748b;
+  --brand-primary:   #6366f1;
+  --brand-primary-d: #4f46e5;
+  --brand-surface:   #f8f9fb;
+  --brand-dark:      #0f172a;
+  --brand-muted:     #64748b;
+  --radius-sm:       6px;
+  --radius-md:       10px;
+  --radius-lg:       14px;
+  --radius-xl:       20px;
+  --shadow-sm:       0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:       0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:       0 12px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.05);
 }
 
-* { box-sizing: border-box; }
+/* ── Base Reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
 
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--brand-surface);
   color: var(--brand-dark);
+  line-height: 1.6;
+  min-height: 100vh;
 }
 
-/* ── Tool Cards ─────────────────────────── */
+/* ── Typography ─────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* ── Focus States (accessibility) ──────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Page Transition ─────────────────────────────────────────────────────── */
+.page-enter {
+  animation: pageIn 0.25s ease forwards;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Tool Cards ──────────────────────────────────────────────────────────── */
 .tool-card {
-  transition: all 0.22s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 .tool-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 16px 40px rgba(99, 102, 241, 0.12);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
   border-color: #c7d2fe !important;
 }
-
-/* ── Upload Zone ────────────────────────── */
-.upload-zone {
-  border: 2.5px dashed #cbd5e1;
-  transition: all 0.2s;
-}
-.upload-zone:hover,
-.upload-zone.drag-active {
-  border-color: var(--brand-primary);
-  background: #eef2ff;
+.tool-card:active {
+  transform: translateY(-1px);
 }
 
-/* ── Buttons ────────────────────────────── */
+/* ── Primary Button ──────────────────────────────────────────────────────── */
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: var(--brand-primary);
   color: white;
-  border-radius: 10px;
-  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  padding: 10px 22px;
+  font-size: 0.875rem;
   font-weight: 600;
-  transition: background 0.2s, transform 0.1s;
+  letter-spacing: -0.01em;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 3px rgba(99,102,241,0.3), 0 0 0 0 rgba(99,102,241,0);
+  white-space: nowrap;
 }
 .btn-primary:hover {
-  background: #4f46e5;
+  background: var(--brand-primary-d);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.35);
 }
 .btn-primary:active {
   transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(99,102,241,0.3);
+}
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
 
-/* ── Progress Bar ───────────────────────── */
-.progress-bar {
-  height: 5px;
+/* ── Secondary Button ────────────────────────────────────────────────────── */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: white;
+  color: #374151;
+  border-radius: var(--radius-md);
+  padding: 10px 22px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* ── Input Fields ────────────────────────────────────────────────────────── */
+.input-field {
+  width: 100%;
+  padding: 9px 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--brand-dark);
+  background: white;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.input-field:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+.input-field::placeholder { color: #94a3b8; }
+
+/* ── Select ──────────────────────────────────────────────────────────────── */
+.select-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+}
+
+/* ── Divider ─────────────────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
   background: #e2e8f0;
-  border-radius: 99px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--brand-primary), #818cf8);
-  transition: width 0.35s ease;
+  margin: 20px 0;
 }
 
-/* ── Scrollbar ──────────────────────────── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+/* ── Badge ───────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.badge-indigo { background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; }
+.badge-green  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.badge-amber  { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Section Label ───────────────────────────────────────────────────────── */
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+/* ── Skeleton Loader ─────────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-md);
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ── Toast overrides ─────────────────────────────────────────────────────── */
+.react-hot-toast > div {
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.875rem !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* ── Utility: smooth link ────────────────────────────────────────────────── */
+a { transition: color 0.15s ease; }
+
+/* ── Responsive container ────────────────────────────────────────────────── */
+.container-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 640px) {
+  .container-page { padding: 0 16px; }
+}
