@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #6366f1;
+  --brand-dark:    #0f0f1a;
+  --brand-surface: #f9f9fb;
+  --brand-muted:   #64748b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--brand-surface);
+  color: var(--brand-dark);
+}
+
+/* ── Tool Cards ─────────────────────────── */
+.tool-card {
+  transition: all 0.22s ease;
+}
+.tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(99, 102, 241, 0.12);
+  border-color: #c7d2fe !important;
+}
+
+/* ── Upload Zone ────────────────────────── */
+.upload-zone {
+  border: 2.5px dashed #cbd5e1;
+  transition: all 0.2s;
+}
+.upload-zone:hover,
+.upload-zone.drag-active {
+  border-color: var(--brand-primary);
+  background: #eef2ff;
+}
+
+/* ── Buttons ────────────────────────────── */
+.btn-primary {
+  background: var(--brand-primary);
+  color: white;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-primary:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ── Progress Bar ───────────────────────── */
+.progress-bar {
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand-primary), #818cf8);
+  transition: width 0.35s ease;
+}
+
+/* ── Scrollbar ──────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }

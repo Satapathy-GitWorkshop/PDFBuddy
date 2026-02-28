@@ -1,0 +1,538 @@
+================================================================================
+   PDFBuddy — COMPLETE SETUP GUIDE
+   React + Node.js | 22 PDF Tools | 100% Free
+================================================================================
+
+This guide walks you through setting up the project from absolute scratch.
+Follow each step in order. Estimated time: 15–30 minutes.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 1 — SYSTEM REQUIREMENTS
+────────────────────────────────────────────────────────────────────────────────
+
+Before starting, make sure you have the following installed:
+
+  ✅ Node.js (version 18 or higher)
+     → Download: https://nodejs.org
+     → Verify:   node --version
+
+  ✅ npm (comes with Node.js)
+     → Verify:   npm --version
+
+  ✅ Git (optional, for cloning)
+     → Download: https://git-scm.com
+     → Verify:   git --version
+
+  ✅ A code editor (VS Code recommended)
+     → Download: https://code.visualstudio.com
+
+  ✅ A terminal / command prompt
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 2 — DOWNLOAD / EXTRACT THE PROJECT
+────────────────────────────────────────────────────────────────────────────────
+
+Option A — From ZIP file (you already have this):
+  1. Extract the ZIP file to a folder of your choice
+  2. Open your terminal
+  3. Navigate to the folder:
+     cd path/to/ilovepdf-clone
+
+Option B — Clone from Git (if uploaded to GitHub):
+  git clone https://github.com/yourusername/ilovepdf-clone.git
+  cd ilovepdf-clone
+
+After extraction, you should see this structure:
+  ilovepdf-clone/
+  ├── frontend/
+  ├── backend/
+  ├── docker-compose.yml
+  ├── README.md
+  └── SETUP.txt  ← you are reading this
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 3 — SETUP THE BACKEND (Node.js + Express)
+────────────────────────────────────────────────────────────────────────────────
+
+STEP 3.1 — Navigate to backend folder
+  cd backend
+
+STEP 3.2 — Create environment file
+  Copy the example env file:
+    Windows:   copy .env.example .env
+    Mac/Linux: cp .env.example .env
+
+  Open .env in your editor. The default settings work out of the box:
+    PORT=5000
+    NODE_ENV=development
+    FRONTEND_URL=http://localhost:3000
+    MAX_FILE_SIZE_MB=100
+    FILE_EXPIRY_HOURS=2
+
+  You do NOT need to change anything to get started locally.
+
+STEP 3.3 — Install dependencies
+  npm install
+
+  This installs all required packages including:
+    - express        (web server)
+    - pdf-lib        (PDF manipulation)
+    - sharp          (image processing)
+    - multer         (file uploads)
+    - archiver       (ZIP creation)
+    - mammoth        (Word file reading)
+    - node-cron      (auto file cleanup)
+    - helmet         (security)
+    - cors           (cross-origin)
+    - morgan         (logging)
+    - uuid           (unique filenames)
+    - express-rate-limit (rate limiting)
+
+STEP 3.4 — Start the backend server
+  Development mode (auto-restart on changes):
+    npm run dev
+
+  Production mode:
+    npm start
+
+  You should see:
+    🚀 Server running on http://localhost:5000
+
+STEP 3.5 — Verify backend is working
+  Open your browser and visit:
+    http://localhost:5000/health
+
+  You should see:
+    {"status":"ok","timestamp":"2024-..."}
+
+  ✅ Backend is ready!
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 4 — SETUP THE FRONTEND (React + Vite)
+────────────────────────────────────────────────────────────────────────────────
+
+Open a NEW terminal window (keep backend running).
+
+STEP 4.1 — Navigate to frontend folder
+  cd frontend
+  (if you're in the root: cd ilovepdf-clone/frontend)
+
+STEP 4.2 — (Optional) Create frontend environment file
+  Windows:   copy .env.example .env    (if it exists)
+  Mac/Linux: cp .env.example .env
+
+  Or create a new .env file with:
+    VITE_API_URL=http://localhost:5000/api
+
+  NOTE: If you skip this step, the Vite proxy in vite.config.js
+  will automatically forward /api requests to localhost:5000.
+
+STEP 4.3 — Install dependencies
+  npm install
+
+  This installs:
+    - react + react-dom      (UI framework)
+    - react-router-dom       (routing)
+    - tailwindcss            (styling)
+    - framer-motion          (animations)
+    - react-dropzone         (file upload UI)
+    - react-hot-toast        (notifications)
+    - axios                  (API calls)
+    - lucide-react           (icons)
+    - pdfjs-dist             (PDF preview)
+
+STEP 4.4 — Start the frontend development server
+  npm run dev
+
+  You should see:
+    VITE v5.x.x  ready in xxx ms
+    ➜  Local:   http://localhost:3000/
+
+STEP 4.5 — Open the app
+  Visit http://localhost:3000 in your browser.
+
+  You should see the PDFBuddy homepage with all 22 tool cards!
+
+  ✅ Frontend is ready!
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 5 — TEST A PDF TOOL
+────────────────────────────────────────────────────────────────────────────────
+
+Let's verify everything works end-to-end:
+
+  1. Go to http://localhost:3000
+  2. Click on "Merge PDF"
+  3. Upload 2 or more PDF files
+  4. Click "Merge PDFs"
+  5. Wait for processing (progress bar shown)
+  6. Click "Download PDF"
+
+  If the download works → your app is fully functional! 🎉
+
+  If you see an error:
+    - Check that backend is running (http://localhost:5000/health)
+    - Check the terminal for error messages
+    - Make sure both terminals are open and running
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 6 — OPTIONAL: INSTALL ENHANCED TOOLS
+────────────────────────────────────────────────────────────────────────────────
+
+The app works out of the box for most PDF tools. For enhanced features,
+install these optional tools:
+
+──────────────────────────────────────
+6A. LIBREOFFICE — Office File Conversions
+    Required for: Word↔PDF, Excel↔PDF, PPT↔PDF
+──────────────────────────────────────
+
+  Ubuntu / Debian / WSL:
+    sudo apt-get update
+    sudo apt-get install -y libreoffice
+    libreoffice --version
+
+  macOS:
+    brew install --cask libreoffice
+    libreoffice --version
+
+  Windows:
+    Download from: https://www.libreoffice.org/download/
+    Install normally.
+    Add to PATH if needed.
+
+  Verify it works:
+    libreoffice --headless --version
+
+──────────────────────────────────────
+6B. PUPPETEER — HTML to PDF Conversion
+    Required for: HTML to PDF tool
+──────────────────────────────────────
+
+  In the backend folder, run:
+    npm install puppeteer
+
+  This downloads Chromium (~170MB). It will then automatically
+  be used when you use the HTML to PDF tool.
+
+  NOTE: On Linux servers, you may also need:
+    sudo apt-get install -y chromium-browser
+    sudo apt-get install -y libgconf-2-4 libatk1.0-0 libatk-bridge2.0-0
+    sudo apt-get install -y libgdk-pixbuf2.0-0 libgtk-3-0 libgbm-dev
+
+──────────────────────────────────────
+6C. TESSERACT.JS — OCR Text Recognition
+    Required for: OCR PDF tool
+──────────────────────────────────────
+
+  In the backend folder, run:
+    npm install tesseract.js
+
+  Tesseract.js is pure JavaScript — no system install needed.
+  It downloads language data automatically on first use.
+
+──────────────────────────────────────
+6D. GHOSTSCRIPT — Better PDF Compression
+    Required for: Enhanced compression quality
+──────────────────────────────────────
+
+  Ubuntu / Debian / WSL:
+    sudo apt-get install -y ghostscript
+    gs --version
+
+  macOS:
+    brew install ghostscript
+    gs --version
+
+  Windows:
+    Download from: https://www.ghostscript.com/releases/
+    Install and add to PATH.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 7 — RUNNING WITH DOCKER (Alternative Method)
+────────────────────────────────────────────────────────────────────────────────
+
+If you prefer Docker over manual setup:
+
+STEP 7.1 — Install Docker Desktop
+  Download: https://www.docker.com/products/docker-desktop
+  Install and start Docker Desktop.
+
+STEP 7.2 — Run the full app
+  In the root ilovepdf-clone/ folder:
+    docker-compose up --build
+
+  This will:
+    - Build and start the frontend (port 3000)
+    - Build and start the backend (port 5000)
+    - LibreOffice and Ghostscript are included in the Docker image
+
+STEP 7.3 — Access the app
+  Frontend: http://localhost:3000
+  Backend:  http://localhost:5000
+
+STEP 7.4 — Stop the app
+  Press Ctrl+C in the terminal, then:
+    docker-compose down
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 8 — PROJECT CONFIGURATION
+────────────────────────────────────────────────────────────────────────────────
+
+BACKEND — backend/.env settings explained:
+
+  PORT=5000
+    → The port the backend server runs on.
+    → Change if port 5000 is already in use.
+
+  NODE_ENV=development
+    → Set to "production" when deploying live.
+
+  FRONTEND_URL=http://localhost:3000
+    → The URL of your frontend app.
+    → Needed for CORS. Change this when you deploy.
+
+  MAX_FILE_SIZE_MB=100
+    → Maximum upload file size in megabytes.
+    → Free users: 100MB. Increase if you need more.
+
+  FILE_EXPIRY_HOURS=2
+    → How long uploaded files are kept on the server.
+    → Default: 2 hours. Files are automatically deleted.
+
+  RATE_LIMIT_WINDOW_MINUTES=15
+    → Time window for rate limiting.
+
+  RATE_LIMIT_MAX_REQUESTS=100
+    → Max requests allowed per IP in the window.
+    → Lower this if you want stricter limits.
+
+FRONTEND — vite.config.js proxy:
+  The frontend proxies /api requests to http://localhost:5000.
+  This means you don't need CORS headers in development.
+  In production, set VITE_API_URL in your hosting platform.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 9 — DEPLOY TO THE INTERNET (FREE)
+────────────────────────────────────────────────────────────────────────────────
+
+Total cost: $0/month using free tiers.
+
+──────────────────────────────────────
+STEP 1: Deploy Backend to Fly.io
+──────────────────────────────────────
+
+  1. Create a free account at https://fly.io
+
+  2. Install Fly CLI:
+     macOS/Linux: curl -L https://fly.io/install.sh | sh
+     Windows:     powershellGet-Process | Install-Module flyctl
+
+  3. Login:
+     fly auth login
+
+  4. In the backend/ folder:
+     fly launch
+     → Choose a name for your app (e.g., ilovepdf-backend)
+     → Choose a region close to you
+     → Answer "No" to database questions
+
+  5. Set environment variables:
+     fly secrets set NODE_ENV=production
+     fly secrets set FRONTEND_URL=https://your-frontend.vercel.app
+
+  6. Deploy:
+     fly deploy
+
+  7. Your backend is live at:
+     https://your-app-name.fly.dev
+
+  8. Test it:
+     curl https://your-app-name.fly.dev/health
+
+──────────────────────────────────────
+STEP 2: Deploy Frontend to Vercel
+──────────────────────────────────────
+
+  1. Create a free account at https://vercel.com
+
+  2. Install Vercel CLI:
+     npm install -g vercel
+
+  3. In the frontend/ folder:
+     vercel
+
+  4. Follow the prompts to link your project.
+
+  5. Set environment variable in Vercel dashboard:
+     VITE_API_URL = https://your-app-name.fly.dev/api
+
+  6. Redeploy:
+     vercel --prod
+
+  7. Your frontend is live at:
+     https://your-project.vercel.app
+
+──────────────────────────────────────
+STEP 3: Set Up Cloudflare R2 (Free Storage)
+──────────────────────────────────────
+
+  For now, the backend stores files locally.
+  To use Cloudflare R2 (free 10GB):
+
+  1. Create account at https://cloudflare.com
+  2. Go to R2 → Create Bucket → name it "ilovepdf-files"
+  3. Go to R2 → API Tokens → Create Token (R2 permissions)
+  4. Add to your Fly.io secrets:
+     fly secrets set R2_ACCOUNT_ID=your_id
+     fly secrets set R2_ACCESS_KEY_ID=your_key
+     fly secrets set R2_SECRET_ACCESS_KEY=your_secret
+     fly secrets set R2_BUCKET_NAME=ilovepdf-files
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 10 — ADDING A CUSTOM DOMAIN (FREE)
+────────────────────────────────────────────────────────────────────────────────
+
+Option A — Free domain via Freenom (no longer active as of 2023)
+  Consider: js.org (for JavaScript projects, free)
+
+Option B — Use your own domain
+  1. Buy a domain (~$10/year at Namecheap or Cloudflare)
+  2. In Vercel: Settings → Domains → Add your domain
+  3. Update your DNS records as Vercel instructs
+
+Option C — Use the free Vercel subdomain
+  Your app already gets: https://your-project.vercel.app
+  This is good enough to launch!
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 11 — COMMON ERRORS AND FIXES
+────────────────────────────────────────────────────────────────────────────────
+
+ERROR: "EADDRINUSE: address already in use :::5000"
+  FIX:  Port 5000 is busy. Either:
+        a) Kill the process using it: lsof -ti:5000 | xargs kill
+        b) Change PORT in backend/.env to 5001
+
+ERROR: "CORS error" in browser console
+  FIX:  Make sure FRONTEND_URL in backend/.env matches your frontend URL exactly.
+        Example: FRONTEND_URL=http://localhost:3000 (no trailing slash)
+
+ERROR: "Cannot find module 'pdf-lib'"
+  FIX:  Run: cd backend && npm install
+
+ERROR: "LibreOffice conversion failed"
+  FIX:  Install LibreOffice (see Section 6A above).
+        Verify with: libreoffice --version
+
+ERROR: "File too large" (413 error)
+  FIX:  Increase MAX_FILE_SIZE_MB in backend/.env
+
+ERROR: "npm install" fails on Windows with "node-gyp" errors
+  FIX:  Install Windows build tools:
+        npm install -g windows-build-tools
+        Or use WSL2 (Windows Subsystem for Linux)
+
+ERROR: Puppeteer fails to launch
+  FIX:  On Linux: sudo apt-get install -y chromium-browser
+        Set env: PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+ERROR: Frontend shows blank page
+  FIX:  Open browser console (F12). Check for errors.
+        Usually means Vite proxy is not connecting to backend.
+        Make sure backend is running first.
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 12 — DEVELOPMENT TIPS
+────────────────────────────────────────────────────────────────────────────────
+
+TIP 1: Use split terminal
+  Run backend and frontend side-by-side in your terminal.
+  VS Code has a built-in split terminal (Ctrl+Shift+5).
+
+TIP 2: Hot reload is enabled
+  Backend (nodemon): auto-restarts when you edit any .js file
+  Frontend (Vite):   instantly updates in browser when you save
+
+TIP 3: Check backend logs
+  All requests are logged by Morgan middleware.
+  Watch the backend terminal to debug API issues.
+
+TIP 4: Uploaded files location
+  Files uploaded by users go to: backend/uploads/
+  Processed output files go to:  backend/outputs/
+  These are auto-cleaned every 30 minutes.
+
+TIP 5: Add a new PDF tool
+  1. Create route:    backend/routes/yourtool.js
+  2. Register route:  add to backend/server.js
+  3. Add API call:    frontend/src/utils/api.js
+  4. Create page:     frontend/src/pages/YourTool.jsx
+  5. Add route:       frontend/src/App.jsx
+  6. Add card:        frontend/src/pages/Home.jsx
+
+TIP 6: Tailwind CSS classes
+  The app uses Tailwind CSS for styling.
+  Custom colors defined in frontend/tailwind.config.js:
+    brand-red:  #E8302A  (primary red)
+    brand-dark: #1a1a2e  (dark text)
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 13 — QUICK REFERENCE
+────────────────────────────────────────────────────────────────────────────────
+
+LOCAL DEVELOPMENT:
+  Start backend:  cd backend && npm run dev    → http://localhost:5000
+  Start frontend: cd frontend && npm run dev   → http://localhost:3000
+  Health check:   http://localhost:5000/health
+
+BUILD FOR PRODUCTION:
+  Frontend build: cd frontend && npm run build  → creates dist/ folder
+  Backend:        cd backend && npm start
+
+USEFUL COMMANDS:
+  Check Node version:  node --version
+  Check npm version:   npm --version
+  List node processes: ps aux | grep node
+  Kill port 5000:      lsof -ti:5000 | xargs kill
+  Kill port 3000:      lsof -ti:3000 | xargs kill
+
+PROJECT PORTS:
+  Frontend (React):    3000
+  Backend (Express):   5000
+  Docker frontend:     3000
+  Docker backend:      5000
+
+FILE SIZE LIMITS:
+  Default max upload:  100MB (change MAX_FILE_SIZE_MB in .env)
+  Auto-delete after:   2 hours (change FILE_EXPIRY_HOURS in .env)
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 14 — SUPPORT & RESOURCES
+────────────────────────────────────────────────────────────────────────────────
+
+Documentation links for technologies used:
+
+  React:              https://react.dev
+  Vite:               https://vitejs.dev
+  Tailwind CSS:       https://tailwindcss.com/docs
+  React Router:       https://reactrouter.com
+  Framer Motion:      https://www.framer.com/motion
+  Express.js:         https://expressjs.com
+  pdf-lib:            https://pdf-lib.js.org
+  Sharp:              https://sharp.pixelplumbing.com
+  Multer:             https://github.com/expressjs/multer
+  Fly.io docs:        https://fly.io/docs
+  Vercel docs:        https://vercel.com/docs
+  Cloudflare R2:      https://developers.cloudflare.com/r2
+  LibreOffice:        https://www.libreoffice.org
+  Puppeteer:          https://pptr.dev
+  Tesseract.js:       https://github.com/naptha/tesseract.js
+
+────────────────────────────────────────────────────────────────────────────────
+
+  ✅ Setup complete! Your PDFBuddy is ready.
+  🚀 Visit http://localhost:3000 to start using your app.
+  💰 Deploy for free using Vercel + Fly.io + Cloudflare R2.
+
+================================================================================
