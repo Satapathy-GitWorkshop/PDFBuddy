@@ -1,105 +1,135 @@
 import { Link } from 'react-router-dom'
-import { FileText, Heart, Github, Twitter } from 'lucide-react'
+import { FileText, Heart, Shield, Clock, Zap } from 'lucide-react'
 
-const footerLinks = {
-  'PDF Tools': [
-    { l: 'Merge PDF',    p: '/merge-pdf' },
-    { l: 'Split PDF',    p: '/split-pdf' },
-    { l: 'Compress PDF', p: '/compress-pdf' },
-    { l: 'Rotate PDF',   p: '/rotate-pdf' },
-    { l: 'Organize PDF', p: '/organize-pdf' },
-    { l: 'Repair PDF',   p: '/repair-pdf' },
-  ],
-  'Convert to PDF': [
-    { l: 'Word to PDF',  p: '/word-to-pdf' },
-    { l: 'JPG to PDF',   p: '/jpg-to-pdf' },
-    { l: 'Excel to PDF', p: '/excel-to-pdf' },
-    { l: 'PPT to PDF',   p: '/ppt-to-pdf' },
-    { l: 'HTML to PDF',  p: '/html-to-pdf' },
-  ],
-  'Convert from PDF': [
-    { l: 'PDF to Word',  p: '/pdf-to-word' },
-    { l: 'PDF to JPG',   p: '/pdf-to-jpg' },
-    { l: 'PDF to Excel', p: '/pdf-to-excel' },
-    { l: 'PDF to PPT',   p: '/pdf-to-ppt' },
-  ],
-  'Edit & Secure': [
-    { l: 'Watermark',    p: '/watermark-pdf' },
-    { l: 'Protect PDF',  p: '/protect-pdf' },
-    { l: 'Unlock PDF',   p: '/unlock-pdf' },
-    { l: 'Sign PDF',     p: '/sign-pdf' },
-    { l: 'OCR PDF',      p: '/ocr-pdf' },
-    { l: 'Crop PDF',     p: '/crop-pdf' },
-  ],
-}
+const columns = [
+  {
+    heading: 'Organize',
+    links: [
+      { l: 'Merge PDF',    p: '/merge-pdf' },
+      { l: 'Split PDF',    p: '/split-pdf' },
+      { l: 'Compress PDF', p: '/compress-pdf' },
+      { l: 'Rotate PDF',   p: '/rotate-pdf' },
+      { l: 'Organize PDF', p: '/organize-pdf' },
+      { l: 'Repair PDF',   p: '/repair-pdf' },
+    ]
+  },
+  {
+    heading: 'Convert to PDF',
+    links: [
+      { l: 'Word to PDF',  p: '/word-to-pdf' },
+      { l: 'Excel to PDF', p: '/excel-to-pdf' },
+      { l: 'PPT to PDF',   p: '/ppt-to-pdf' },
+      { l: 'JPG to PDF',   p: '/jpg-to-pdf' },
+      { l: 'HTML to PDF',  p: '/html-to-pdf' },
+    ]
+  },
+  {
+    heading: 'Convert from PDF',
+    links: [
+      { l: 'PDF to Word',  p: '/pdf-to-word' },
+      { l: 'PDF to Excel', p: '/pdf-to-excel' },
+      { l: 'PDF to PPT',   p: '/pdf-to-ppt' },
+      { l: 'PDF to JPG',   p: '/pdf-to-jpg' },
+    ]
+  },
+  {
+    heading: 'Edit & Security',
+    links: [
+      { l: 'Watermark PDF', p: '/watermark-pdf' },
+      { l: 'Sign PDF',      p: '/sign-pdf' },
+      { l: 'Protect PDF',   p: '/protect-pdf' },
+      { l: 'Unlock PDF',    p: '/unlock-pdf' },
+      { l: 'Page Numbers',  p: '/page-numbers' },
+      { l: 'Crop PDF',      p: '/crop-pdf' },
+    ]
+  }
+]
+
+const trustItems = [
+  { icon: Shield, text: 'SSL encrypted transfers' },
+  { icon: Clock,  text: 'Files deleted after 2 hours' },
+  { icon: Zap,    text: 'No account required' },
+]
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-400 mt-20">
-      <div className="max-w-7xl mx-auto px-5 pt-14 pb-8">
+    <footer className="bg-slate-900 text-slate-400">
 
-        {/* Top row: Logo + tagline */}
-        <div className="flex flex-col md:flex-row md:items-start gap-10 mb-12">
-          <div className="md:w-56 shrink-0">
-            <Link to="/" className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <FileText size={16} className="text-white" />
+      {/* ── Trust bar ── */}
+      <div className="border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center gap-6">
+          {trustItems.map(({ icon: Icon, text }) => (
+            <span key={text} className="flex items-center gap-2 text-xs text-slate-500">
+              <Icon size={13} className="text-indigo-500" />
+              {text}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Main footer body ── */}
+      <div className="max-w-7xl mx-auto px-6 pt-12 pb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+
+          {/* Brand column */}
+          <div className="col-span-2 md:col-span-1">
+            <Link to="/" className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 bg-indigo-600 rounded-md flex items-center justify-center">
+                <FileText size={14} className="text-white" />
               </div>
-              <span className="font-display font-extrabold text-xl text-white">
+              <span className="font-display font-extrabold text-white text-lg">
                 PDF<span className="text-indigo-400">Buddy</span>
               </span>
             </Link>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              Every PDF tool you need, completely free. Files deleted automatically after 2 hours.
+            <p className="text-xs text-slate-500 leading-relaxed max-w-[180px]">
+              Professional PDF tools for everyone. Free, fast, and secure.
             </p>
           </div>
 
-          {/* Links grid */}
-          <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-8">
-            {Object.entries(footerLinks).map(([category, links]) => (
-              <div key={category}>
-                <h4 className="text-white text-sm font-semibold mb-3">{category}</h4>
-                <ul className="space-y-2">
-                  {links.map(link => (
-                    <li key={link.p}>
-                      <Link
-                        to={link.p}
-                        className="text-sm text-slate-500 hover:text-indigo-400 transition-colors"
-                      >
-                        {link.l}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          {/* Link columns */}
+          {columns.map(col => (
+            <div key={col.heading}>
+              <h4 className="text-white text-xs font-bold uppercase tracking-wider mb-4">
+                {col.heading}
+              </h4>
+              <ul className="space-y-2.5">
+                {col.links.map(link => (
+                  <li key={link.p}>
+                    <Link
+                      to={link.p}
+                      className="text-xs text-slate-500 hover:text-indigo-400 transition-colors"
+                    >
+                      {link.l}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+        {/* ── Bottom bar ── */}
+        <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
 
-          {/* Made by */}
-          <p className="flex items-center gap-1.5 text-slate-500">
+          <p className="text-slate-600">
+            © {new Date().getFullYear()} PDFBuddy. All rights reserved.
+          </p>
+
+          <p className="flex items-center gap-1.5 text-slate-600">
             Designed &amp; built with
-            <Heart size={13} className="text-indigo-400 fill-indigo-400" />
+            <Heart size={11} className="text-indigo-500 fill-indigo-500 mx-0.5" />
             by{' '}
             <a
               href="https://github.com/satpathy98"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors"
+              className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors ml-1"
             >
               Saurav Satpathy
             </a>
           </p>
 
-          {/* Privacy note */}
-          <p className="text-slate-600 text-xs">
-            🔒 Files are encrypted and auto-deleted after 2 hours. Your privacy is protected.
-          </p>
         </div>
-
       </div>
     </footer>
   )
