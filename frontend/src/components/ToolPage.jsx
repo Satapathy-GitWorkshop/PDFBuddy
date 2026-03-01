@@ -8,15 +8,7 @@ import {
 import FileUploader from './FileUploader'
 import toast from 'react-hot-toast'
 
-// Step indicator
 const STEPS = ['Upload', 'Configure', 'Download']
-
-const formatSize = (bytes) => {
-  if (!bytes) return null
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-}
 
 export default function ToolPage({
   title,
@@ -29,20 +21,16 @@ export default function ToolPage({
   onProcess,
   buttonLabel = 'Process File'
 }) {
-  const [files, setFiles]       = useState([])
-  const [loading, setLoading]   = useState(false)
-  const [result, setResult]     = useState(null)
-  const [progress, setProgress] = useState(0)
+  const [files, setFiles]                 = useState([])
+  const [loading, setLoading]             = useState(false)
+  const [result, setResult]               = useState(null)
+  const [progress, setProgress]           = useState(0)
   const [progressLabel, setProgressLabel] = useState('Processing…')
 
-  // Determine current step
   const currentStep = result ? 2 : files.length > 0 ? 1 : 0
 
   const handleProcess = async () => {
-    if (!files.length) {
-      toast.error('Please select at least one file')
-      return
-    }
+    if (!files.length) { toast.error('Please select at least one file'); return }
     setLoading(true)
     setProgress(10)
     setProgressLabel('Uploading file…')
@@ -51,7 +39,7 @@ export default function ToolPage({
       setProgress(p => {
         if (p < 30) { setProgressLabel('Uploading file…');    return p + 8 }
         if (p < 60) { setProgressLabel('Processing…');        return p + 6 }
-        if (p < 80) { setProgressLabel('Optimizing output…'); return p + 4 }
+        if (p < 82) { setProgressLabel('Optimizing output…'); return p + 3 }
         return Math.min(p + 1, 88)
       })
     }, 400)
@@ -65,8 +53,7 @@ export default function ToolPage({
     } catch (err) {
       clearInterval(interval)
       setProgress(0)
-      const msg = err?.response?.data?.error || err?.response?.data?.fix || err.message || 'Something went wrong.'
-      toast.error(msg)
+      toast.error(err?.response?.data?.error || err.message || 'Something went wrong.')
     } finally {
       setLoading(false)
     }
@@ -90,7 +77,7 @@ export default function ToolPage({
     document.body.removeChild(link)
   }
 
-  // File size info
+  // Size saved calculation (for compress tool)
   const inputSize  = files[0]?.size
   const outputSize = result?.fileSize
   const savedPct   = (inputSize && outputSize && outputSize < inputSize)
@@ -100,11 +87,9 @@ export default function ToolPage({
   return (
     <div className="min-h-screen bg-slate-50">
 
-      {/* ── Top bar: Breadcrumb + Step Indicator ── */}
+      {/* ── Breadcrumb + Steps ── */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between">
-
-          {/* Breadcrumb */}
           <nav className="flex items-center gap-1.5 text-xs text-slate-400">
             <Link to="/" className="hover:text-indigo-600 transition flex items-center gap-1">
               <Home size={12} /> Home
@@ -113,18 +98,14 @@ export default function ToolPage({
             <span className="text-slate-700 font-medium">{title}</span>
           </nav>
 
-          {/* Steps */}
           <div className="hidden sm:flex items-center gap-1">
             {STEPS.map((step, i) => (
               <div key={step} className="flex items-center gap-1">
                 <div className={`
                   flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all
-                  ${i === currentStep
-                    ? 'bg-indigo-600 text-white'
-                    : i < currentStep
-                      ? 'bg-indigo-50 text-indigo-600'
-                      : 'bg-slate-100 text-slate-400'
-                  }
+                  ${i === currentStep ? 'bg-indigo-600 text-white'
+                    : i < currentStep  ? 'bg-indigo-50 text-indigo-600'
+                    : 'bg-slate-100 text-slate-400'}
                 `}>
                   {i < currentStep
                     ? <CheckCircle size={11} />
@@ -151,23 +132,21 @@ export default function ToolPage({
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="flex items-center gap-4 mb-8"
         >
-          <div className="flex items-center gap-4">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 border"
-              style={{ background: color + '12', borderColor: color + '25' }}
-            >
-              {icon}
-            </div>
-            <div>
-              <h1 className="text-2xl font-display font-extrabold text-slate-900">{title}</h1>
-              <p className="text-slate-500 text-sm mt-0.5">{description}</p>
-            </div>
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 border"
+            style={{ background: color + '12', borderColor: color + '25' }}
+          >
+            {icon}
+          </div>
+          <div>
+            <h1 className="text-2xl font-display font-extrabold text-slate-900">{title}</h1>
+            <p className="text-slate-500 text-sm mt-0.5">{description}</p>
           </div>
         </motion.div>
 
-        {/* ── Main Card ── */}
+        {/* ── Card ── */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -175,7 +154,9 @@ export default function ToolPage({
           className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
         >
           <AnimatePresence mode="wait">
-            {!result ? (
+
+            {/* ── Upload / Configure panel ── */}
+            {!result && (
               <motion.div
                 key="upload"
                 initial={{ opacity: 0 }}
@@ -183,7 +164,6 @@ export default function ToolPage({
                 exit={{ opacity: 0 }}
                 className="p-8"
               >
-                {/* File Uploader */}
                 <FileUploader
                   files={files}
                   setFiles={setFiles}
@@ -201,16 +181,14 @@ export default function ToolPage({
                       className="overflow-hidden"
                     >
                       <div className="border border-slate-200 rounded-xl p-5 bg-slate-50">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
-                          Options
-                        </p>
+                        <p className="section-label">Options</p>
                         {options}
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                {/* Progress */}
+                {/* Progress bar */}
                 <AnimatePresence>
                   {loading && (
                     <motion.div
@@ -239,7 +217,7 @@ export default function ToolPage({
                   )}
                 </AnimatePresence>
 
-                {/* Action button */}
+                {/* Process button */}
                 <AnimatePresence>
                   {files.length > 0 && !loading && (
                     <motion.div
@@ -259,9 +237,10 @@ export default function ToolPage({
                   )}
                 </AnimatePresence>
               </motion.div>
+            )}
 
-            ) : (
-              /* ── Result Panel ── */
+            {/* ── Result panel — stats + download only, no preview ── */}
+            {result && (
               <motion.div
                 key="result"
                 initial={{ opacity: 0 }}
@@ -279,9 +258,8 @@ export default function ToolPage({
                   </div>
                 </div>
 
-                {/* File stats */}
+                {/* Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-                  {/* Output filename */}
                   <div className="col-span-2 sm:col-span-1 bg-slate-50 rounded-lg border border-slate-200 p-3">
                     <p className="text-xs text-slate-400 mb-1 flex items-center gap-1">
                       <FileText size={11} /> Output file
@@ -291,7 +269,6 @@ export default function ToolPage({
                     </p>
                   </div>
 
-                  {/* Page count if available */}
                   {result.pageCount && (
                     <div className="bg-slate-50 rounded-lg border border-slate-200 p-3">
                       <p className="text-xs text-slate-400 mb-1">Pages</p>
@@ -299,7 +276,6 @@ export default function ToolPage({
                     </div>
                   )}
 
-                  {/* Size saved (compress tool) */}
                   {savedPct !== null && (
                     <div className="bg-green-50 rounded-lg border border-green-200 p-3">
                       <p className="text-xs text-green-600 mb-1">Size reduced</p>
@@ -307,16 +283,15 @@ export default function ToolPage({
                     </div>
                   )}
 
-                  {/* Auto delete notice */}
                   <div className="col-span-2 sm:col-span-3 bg-amber-50 rounded-lg border border-amber-100 p-3 flex items-center gap-2">
                     <Clock size={13} className="text-amber-500 shrink-0" />
                     <p className="text-xs text-amber-700">
-                      This file will be automatically deleted from our servers in <strong>2 hours</strong>.
+                      File auto-deleted in <strong>2 hours</strong>. Download now to save it.
                     </p>
                   </div>
                 </div>
 
-                {/* Action buttons */}
+                {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={handleDownload}
@@ -338,15 +313,11 @@ export default function ToolPage({
           </AnimatePresence>
         </motion.div>
 
-        {/* ── Security footer note ── */}
+        {/* Security note */}
         <div className="flex items-center justify-center gap-4 mt-6 text-xs text-slate-400">
-          <span className="flex items-center gap-1">
-            <Shield size={11} /> SSL encrypted upload
-          </span>
+          <span className="flex items-center gap-1"><Shield size={11} /> SSL encrypted</span>
           <span>·</span>
-          <span className="flex items-center gap-1">
-            <Clock size={11} /> Files deleted after 2 hours
-          </span>
+          <span className="flex items-center gap-1"><Clock size={11} /> Deleted after 2 hours</span>
           <span>·</span>
           <span>No account required</span>
         </div>

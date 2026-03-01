@@ -11,5 +11,13 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  optimizeDeps: {
+    include: [
+      'pdfjs-dist/legacy/build/pdf.js',
+    ],
+    exclude: [
+      'pdfjs-dist/legacy/build/pdf.worker.js',
+    ]
   }
 })
