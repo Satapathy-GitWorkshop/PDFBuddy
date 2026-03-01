@@ -1,7 +1,7 @@
-const express = require('express')
-const router = express.Router()
-const { PDFDocument } = require('pdf-lib')
-const fs = require('fs')
+const express      = require('express')
+const router       = express.Router()
+const { PDFDocument, degrees } = require('pdf-lib')
+const fs           = require('fs')
 const { uploadPDF } = require('../middleware/upload')
 const { outputPath, fileResponse, cleanupFiles } = require('../utils/fileHelper')
 
@@ -11,28 +11,60 @@ router.post('/organize', uploadPDF.single('files'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Please upload a PDF file' })
 
-    // pageOrder: comma-separated 1-based page indices e.g. "3,1,2,4"
-    const { pageOrder = '', deletePages = '' } = req.body
+    // rotation: '90' | '180' | '270' | 'none'
+    // applyTo:  'all' | 'odd' | 'even'
+    // blankPage: 'none' | 'start' | 'end' | 'both'
+    // blankCount: number
+    const {
+      rotation   = 'none',
+      applyTo    = 'all',
+      blankPage  = 'none',
+      blankCount = '1',
+    } = req.body
 
-    const bytes = fs.readFileSync(inputPath)
+    const bytes  = fs.readFileSync(inputPath)
     const srcPdf = await PDFDocument.load(bytes)
-    const total = srcPdf.getPageCount()
+    const total  = srcPdf.getPageCount()
 
-    const deletedSet = deletePages
-      ? new Set(deletePages.split(',').map(n => parseInt(n) - 1))
-      : new Set()
+    // Apply rotation
+    if (rotation !== 'none') {
+      const deg = parseInt(rotation)
+      for (let i = 0; i < total; i++) {
+        const isOdd  = (i + 1) % 2 !== 0
+        const isEven = (i + 1) % 2 === 0
+        const shouldRotate =
+          applyTo === 'all' ||
+          (applyTo === 'odd'  && isOdd) ||
+          (applyTo === 'even' && isEven)
 
-    let order = pageOrder
-      ? pageOrder.split(',').map(n => parseInt(n) - 1)
-      : Array.from({ length: total }, (_, i) => i)
+        if (shouldRotate) {
+          const page    = srcPdf.getPage(i)
+          const current = page.getRotation().angle
+          page.setRotation(degrees((current + deg) % 360))
+        }
+      }
+    }
 
-    order = order.filter(i => i >= 0 && i < total && !deletedSet.has(i))
+    // Add blank pages
+    const count = Math.max(1, Math.min(10, parseInt(blankCount) || 1))
+    if (blankPage !== 'none') {
+      // Get dimensions of first page for blank page size
+      const firstPage = srcPdf.getPage(0)
+      const { width, height } = firstPage.getSize()
 
-    const newPdf = await PDFDocument.create()
-    const copied = await newPdf.copyPages(srcPdf, order)
-    copied.forEach(p => newPdf.addPage(p))
+      if (blankPage === 'start' || blankPage === 'both') {
+        for (let i = 0; i < count; i++) {
+          srcPdf.insertPage(0).setSize(width, height)
+        }
+      }
+      if (blankPage === 'end' || blankPage === 'both') {
+        for (let i = 0; i < count; i++) {
+          srcPdf.addPage().setSize(width, height)
+        }
+      }
+    }
 
-    const outBytes = await newPdf.save()
+    const outBytes = await srcPdf.save()
     outPath = outputPath('.pdf')
     fs.writeFileSync(outPath, outBytes)
 

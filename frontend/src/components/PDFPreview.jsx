@@ -7,40 +7,60 @@ const formatSize = (bytes) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
-let _pdfjs = null
-async function loadPdfjs() {
-  if (_pdfjs) return _pdfjs
-  const mod = await import('pdfjs-dist/legacy/build/pdf.js')
-  const lib = mod.default ?? mod
-  lib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/legacy/build/pdf.worker.js',
-    import.meta.url
-  ).toString()
-  _pdfjs = lib
-  return lib
+// Load pdfjs once — but do NOT cache the lib until workerSrc is confirmed set
+let _pdfjsPromise = null
+function loadPdfjs() {
+  if (_pdfjsPromise) return _pdfjsPromise
+  _pdfjsPromise = import('pdfjs-dist/legacy/build/pdf.js').then(mod => {
+    const lib = mod.default ?? mod
+    lib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/legacy/build/pdf.worker.js',
+      import.meta.url
+    ).toString()
+    return lib
+  })
+  return _pdfjsPromise
 }
 
 async function renderPDFToCanvas(file, canvas, renderWidth) {
   const lib        = await loadPdfjs()
   const buffer     = await file.arrayBuffer()
   const typedArray = new Uint8Array(buffer)
-  const pdf        = await lib.getDocument({
+
+  const pdf  = await lib.getDocument({
     data: typedArray, isEvalSupported: false, useSystemFonts: true,
   }).promise
-  const page     = await pdf.getPage(1)
-  const viewport = page.getViewport({ scale: 1 })
-  const scale    = renderWidth / viewport.width
-  const scaled   = page.getViewport({ scale })
-  canvas.width  = Math.floor(scaled.width)
-  canvas.height = Math.floor(scaled.height)
+
+  const page = await pdf.getPage(1)
+
+  // page.rotate is the PDF's stored rotation (0 / 90 / 180 / 270).
+  // Must be passed to getViewport — pdfjs does NOT apply it automatically.
+  // This is why the first render looked wrong: viewport was calculated
+  // without rotation, so width/height were swapped or flipped.
+  const rotation = page.rotate   // e.g. 180 for your PDF
+
+  // Get viewport WITH rotation so dimensions are already corrected
+  const baseViewport = page.getViewport({ scale: 1, rotation })
+  const scale        = renderWidth / baseViewport.width
+  const viewport     = page.getViewport({ scale, rotation })
+
+  canvas.width  = Math.floor(viewport.width)
+  canvas.height = Math.floor(viewport.height)
+
   const ctx = canvas.getContext('2d')
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
-  await page.render({ canvasContext: ctx, viewport: scaled }).promise
+
+  // Render — must also use the rotated viewport here
+  await page.render({ canvasContext: ctx, viewport }).promise
+
   return pdf.numPages
 }
 
-const PDFPreview = forwardRef(function PDFPreview({ file, renderWidth = 400, overlay = null }, ref) {
+const PDFPreview = forwardRef(function PDFPreview(
+  { file, renderWidth = 340, overlay = null },
+  ref
+) {
   const baseCanvasRef    = useRef(null)
   const overlayCanvasRef = useRef(null)
   const [status, setStatus]       = useState('idle')
@@ -55,13 +75,22 @@ const PDFPreview = forwardRef(function PDFPreview({ file, renderWidth = 400, ove
   useEffect(() => {
     const canvas = baseCanvasRef.current
     if (!file || !canvas) return
+
+    // Reset to loading BEFORE the async work starts —
+    // this clears any stale canvas content from a previous file
     setStatus('loading')
     setPageCount(null)
+
+    // Clear the canvas immediately so old content doesn't flash
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
     renderPDFToCanvas(file, canvas, renderWidth)
       .then(count => { setPageCount(count); setStatus('done') })
       .catch(err  => { console.error('[PDFPreview]', err.message); setStatus('error') })
   }, [file, renderWidth])
 
+  // Sync overlay canvas size whenever base canvas renders
   useEffect(() => {
     const base = baseCanvasRef.current
     const ov   = overlayCanvasRef.current
@@ -70,78 +99,74 @@ const PDFPreview = forwardRef(function PDFPreview({ file, renderWidth = 400, ove
     ov.height = base.height
   }, [status])
 
-  const minHeight  = Math.round(renderWidth * 1.414)
-  const rotateDeg  = overlay?.type === 'rotate' ? overlay.deg : 0
+  const rotateDeg   = overlay?.type === 'rotate' ? overlay.deg : 0
   const showOverlay = overlay && overlay.type !== 'rotate' && overlay.type !== 'crop'
-
-  // For crop: derive px values from mm (approximate for display)
-  const cropStyle = overlay?.type === 'crop' ? {
-    borderTop:    `${Math.round(overlay.top    * 1.5)}px solid rgba(99,102,241,0.5)`,
-    borderRight:  `${Math.round(overlay.right  * 1.5)}px solid rgba(99,102,241,0.5)`,
-    borderBottom: `${Math.round(overlay.bottom * 1.5)}px solid rgba(99,102,241,0.5)`,
-    borderLeft:   `${Math.round(overlay.left   * 1.5)}px solid rgba(99,102,241,0.5)`,
+  const cropBorder  = overlay?.type === 'crop' ? {
+    borderTop:    `${Math.round((overlay.top    || 0) * 1.5)}px solid rgba(99,102,241,0.55)`,
+    borderRight:  `${Math.round((overlay.right  || 0) * 1.5)}px solid rgba(99,102,241,0.55)`,
+    borderBottom: `${Math.round((overlay.bottom || 0) * 1.5)}px solid rgba(99,102,241,0.55)`,
+    borderLeft:   `${Math.round((overlay.left   || 0) * 1.5)}px solid rgba(99,102,241,0.55)`,
   } : {}
 
   return (
     <div className="w-full">
-      {/* Rotation wrapper */}
-      <div
-        style={{
-          transform:       `rotate(${rotateDeg}deg)`,
-          transition:      'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          transformOrigin: 'center center',
-        }}
-      >
-        <div
-          className="relative w-full bg-white border border-slate-200 rounded-xl overflow-hidden shadow-md"
-          style={{ minHeight }}
-        >
+      <div style={{
+        transform: `rotate(${rotateDeg}deg)`,
+        transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
+        transformOrigin: 'center center',
+      }}>
+        <div className="relative w-full bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+
           {status === 'loading' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-50">
-              <Loader size={24} className="text-indigo-500 animate-spin" />
-              <p className="text-xs text-slate-400 font-medium">Generating preview…</p>
+            <div className="flex flex-col items-center justify-center gap-3 bg-slate-50 py-20">
+              <Loader size={22} className="text-indigo-500 animate-spin" />
+              <p className="text-xs text-slate-400">Generating preview…</p>
             </div>
           )}
+
           {status === 'error' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-50">
-              <FileText size={32} className="text-slate-300" />
+            <div className="flex flex-col items-center justify-center gap-3 bg-slate-50 py-20">
+              <FileText size={28} className="text-slate-300" />
               <p className="text-xs text-slate-400">Preview unavailable</p>
             </div>
           )}
 
-          {/* Base PDF canvas */}
+          {/* Canvas — natural size, no CSS height forcing */}
           <canvas
             ref={baseCanvasRef}
-            className="w-full h-auto block"
-            style={{ display: status === 'done' ? 'block' : 'none' }}
+            style={{
+              display: status === 'done' ? 'block' : 'none',
+              width: '100%',
+              height: 'auto',
+            }}
           />
 
-          {/* Canvas overlay — watermark / page numbers */}
           {status === 'done' && showOverlay && (
             <canvas
               ref={overlayCanvasRef}
-              className="absolute inset-0 w-full h-full pointer-events-none"
+              className="absolute inset-0 pointer-events-none"
+              style={{ width: '100%', height: '100%' }}
             />
           )}
 
-          {/* Crop overlay — CSS borders */}
           {status === 'done' && overlay?.type === 'crop' && (
-            <div className="absolute inset-0 pointer-events-none transition-all duration-300"
-              style={cropStyle} />
+            <div
+              className="absolute inset-0 pointer-events-none transition-all duration-300"
+              style={cropBorder}
+            />
           )}
         </div>
       </div>
 
-      {/* File info */}
       {status === 'done' && (
-        <div className="mt-3 flex items-center justify-between px-1">
+        <div className="mt-2 flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-indigo-50 border border-indigo-100 rounded-md flex items-center justify-center">
-              <FileText size={13} className="text-indigo-500" />
+            <div className="w-6 h-6 bg-indigo-50 border border-indigo-100 rounded-md flex items-center justify-center">
+              <FileText size={11} className="text-indigo-500" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-800 truncate max-w-[200px]">{file.name}</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs font-semibold text-slate-700 truncate max-w-[180px]">{file.name}</p>
+              <p className="text-[10px] text-slate-400">
                 {pageCount} page{pageCount !== 1 ? 's' : ''} · {formatSize(file.size)}
               </p>
             </div>
